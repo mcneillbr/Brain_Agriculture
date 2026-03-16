@@ -1,0 +1,9 @@
+%syntax-version=1.0.0
+%project=brain_agriculture
+
+000_create_extension_on_database 2026-03-16T21:01:04Z Marcelo N <mcneill.marcelo@gmail.com> # Create Extension on Database
+001_create_enum_document_type 2026-03-16T21:14:00Z Marcelo N <mcneill.marcelo@gmail.com> # Deploy brain_agriculture:001_create_enum_document_type
+002_create_table_producers 2026-03-16T21:22:06Z Marcelo N <mcneill.marcelo@gmail.com> # Deploy brain_agriculture:002_create_table_producers
+003_create_table_farms 2026-03-16T21:25:44Z Marcelo N <mcneill.marcelo@gmail.com> # Deploy brain_agriculture:003_create_table_farms
+004_create_table_harvests 2026-03-16T21:34:28Z Marcelo N <mcneill.marcelo@gmail.com> # brain_agriculture:004_create_table_harvests
+005_create_table_crops 2026-03-16T21:40:03Z Marcelo N <mcneill.marcelo@gmail.com> # Deploy brain_agriculture:005_create_table_crops
