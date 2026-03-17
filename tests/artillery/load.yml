@@ -1,0 +1,101 @@
+config:
+  # Override: ARTILLERY_TARGET=http://host:port npm run test:load
+  target: "{{ $processEnvironment.ARTILLERY_TARGET | default('http://localhost:3000') }}"
+  plugins:
+    expect: {}
+  phases:
+    - name: Aquecimento
+      duration: 10
+      arrivalRate: 2
+    - name: Carga
+      duration: 30
+      arrivalRate: 10
+    - name: Pico
+      duration: 10
+      arrivalRate: 25
+  environments:
+    smoke:
+      phases:
+        - name: Smoke
+          duration: 5
+          arrivalCount: 2
+  # CPFs pre-gerados com algoritmo valido; sequencial para evitar colisao
+  # em carga alta (cada iteracao consome o proximo CPF, ciclando em 30)
+  payload:
+    path: "./cpfs.csv"
+    fields:
+      - "document"
+    order: sequence
+  defaults:
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+
+scenarios:
+  # ─── Leitura (85%) ────────────────────────────────────────────────────────
+  - name: "Leitura"
+    weight: 85
+    flow:
+      - get:
+          url: "/api/producers"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/harvests"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/dashboard"
+          expect:
+            - statusCode: 200
+      # Deve retornar 404 — UUID valido mas inexistente
+      - get:
+          url: "/api/producers/00000000-0000-4000-a000-000000000000"
+          expect:
+            - statusCode: 404
+      # Deve retornar 400 — UUID invalido
+      - get:
+          url: "/api/producers/nao-e-um-uuid"
+          expect:
+            - statusCode: 400
+
+  # ─── CRUD completo (15%) ──────────────────────────────────────────────────
+  # Criacao de harvest omitida por restricao de unicidade de ano.
+  # Para testar harvest/crop sem colisao, use: npm run test:load:smoke
+  - name: "CRUD completo"
+    weight: 15
+    flow:
+      - post:
+          url: "/api/producers"
+          json:
+            name: "Produtor Teste Artillery"
+            document: "{{ document }}"
+          capture:
+            - json: "$.id"
+              as: producerId
+      - post:
+          url: "/api/farms"
+          json:
+            producerId: "{{ producerId }}"
+            name: "Fazenda Artillery"
+            city: "Sao Paulo"
+            state: "SP"
+            totalArea: 500
+            arableArea: 300
+            vegetationArea: 150
+          capture:
+            - json: "$.id"
+              as: farmId
+      - get:
+          url: "/api/dashboard"
+          expect:
+            - statusCode: 200
+      # Limpeza — garante que o CPF fica disponivel para proxima iteracao
+      - delete:
+          url: "/api/farms/{{ farmId }}"
+          expect:
+            - statusCode: 204
+      - delete:
+          url: "/api/producers/{{ producerId }}"
+          expect:
+            - statusCode: 204
