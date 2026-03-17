@@ -1,0 +1,57 @@
+{
+  "name": "brain_agriculture",
+  "version": "1.0.0",
+  "description": "Olá! Bem-vindo(a) ao nosso teste técnico. Estamos muito animados para conhecer mais sobre você, suas habilidades técnicas e sua forma de resolver problemas. Este teste foi pensado para ser um reflexo do que valorizamos em nosso time, e esperamos que você se sinta confortável e confiante durante o processo.",
+  "main": "dist/main.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "jest --runInBand",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/main.js",
+    "start:dev": "ts-node src/main.ts",
+    "test:watch": "jest --watch",
+    "test:load": "artillery run tests/artillery/load.yml",
+    "test:load:smoke": "artillery run --environment smoke tests/artillery/load.yml",
+    "test:load:report": "artillery run --output tests/artillery/report.json tests/artillery/load.yml && artillery report --output tests/artillery/report.html tests/artillery/report.json",
+    "test:load:ci": "wait-on http://localhost:3000/api/dashboard --timeout 30000 && artillery run tests/artillery/load.yml"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mcneillbr/Brain_Agriculture.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/mcneillbr/Brain_Agriculture/issues"
+  },
+  "homepage": "https://github.com/mcneillbr/Brain_Agriculture#readme",
+  "dependencies": {
+    "@nestjs/common": "^11.1.17",
+    "@nestjs/config": "^4.0.3",
+    "@nestjs/core": "^11.1.17",
+    "@nestjs/platform-express": "^11.1.17",
+    "@nestjs/swagger": "^11.2.6",
+    "@nestjs/typeorm": "^11.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.4",
+    "express": "^5.2.1",
+    "pg": "^8.20.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "typeorm": "^0.3.28"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
+    "@types/supertest": "^7.2.0",
+    "jest": "^30.3.0",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
