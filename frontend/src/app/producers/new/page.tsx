@@ -398,13 +398,23 @@ export default function NewProducerPage() {
       }
       const farm = await api.farms.create(farmData)
 
-      // 3. Create Harvests and Crops
+      // 3. Reuse existing harvests by year and create only missing ones
+      const existingHarvests = await api.harvests.getAll()
+      const harvestByYear = new Map<number, HarvestDto>(
+        existingHarvests.map((harvest) => [harvest.year, harvest]),
+      )
+
       for (const harvestData of formState.harvests) {
-        const harvestDto: CreateHarvestDto = {
-          name: `Safra ${harvestData.year}`,
-          year: harvestData.year,
+        let harvest = harvestByYear.get(harvestData.year)
+
+        if (!harvest) {
+          const harvestDto: CreateHarvestDto = {
+            name: `Safra ${harvestData.year}`,
+            year: harvestData.year,
+          }
+          harvest = await api.harvests.create(harvestDto)
+          harvestByYear.set(harvestData.year, harvest)
         }
-        const harvest = await api.harvests.create(harvestDto)
 
         // 4. Add Crops to Farm
         for (const cropName of harvestData.crops) {
