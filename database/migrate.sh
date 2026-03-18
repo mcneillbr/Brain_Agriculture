@@ -25,7 +25,7 @@ else
   PGPASSWORD=$DB_PASSWORD createdb -h $DB_HOST -p $DB_PORT -U $DB_USER $DB_NAME
 fi
 # Change to the database directory and run sqitch deploy and verify
-cd database || cd $(find $HOME -name database -type d | grep Brain_Agriculture)
+cd database || cd $(find $HOME -name database -type d | grep Brain_Agriculture/database | head -n 1)
 # Run sqitch deploy and verify
 sqitch deploy -t $SQITCH_DB_URI
 sqitch verify -t $SQITCH_DB_URI

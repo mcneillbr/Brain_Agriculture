@@ -7,3 +7,4 @@
 003_create_table_farms 2026-03-16T21:25:44Z Marcelo N <mcneill.marcelo@gmail.com> # Deploy brain_agriculture:003_create_table_farms
 004_create_table_harvests 2026-03-16T21:34:28Z Marcelo N <mcneill.marcelo@gmail.com> # brain_agriculture:004_create_table_harvests
 005_create_table_crops 2026-03-16T21:40:03Z Marcelo N <mcneill.marcelo@gmail.com> # Deploy brain_agriculture:005_create_table_crops
+006_insert_initial_data 2026-03-17T20:42:39Z Marcelo N <mcneill.marcelo@gmail.com> # Add initial data

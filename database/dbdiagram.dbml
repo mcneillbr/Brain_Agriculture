@@ -1,0 +1,50 @@
+table producers {
+  id uuid [pk, default: `gen_random_uuid()`]
+  document varchar(14) [unique, not null, note: 'CPF (11 digits) ou CNPJ (14 digits), apenas números']
+  document_type varchar(4) [not null, note: 'CPF ou CNPJ']
+  name varchar(255) [not null]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+table farms {
+  id uuid [pk, default: `gen_random_uuid()`]
+  producer_id uuid [not null, ref: > producers.id]
+  name varchar(255) [not null]
+  city varchar(100) [not null]
+  state char(2) [not null, note: 'Sigla UF — SP, MG, RS...']
+  total_area float [not null, note: 'hectares']
+  arable_area float [not null, note: 'hectares']
+  vegetation_area float [not null, note: 'hectares']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+
+  indexes {
+    producer_id
+    state
+  }
+}
+
+table harvests {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar(100) [not null, note: 'ex: Safra 2024']
+  year int [not null]
+  created_at timestamp [default: `now()`]
+
+  indexes {
+    year
+  }
+}
+
+table crops {
+  id uuid [pk, default: `gen_random_uuid()`]
+  farm_id uuid [not null, ref: > farms.id]
+  harvest_id uuid [not null, ref: > harvests.id]
+  name varchar(100) [not null, note: 'Soja, Milho, Café, Algodão...']
+  created_at timestamp [default: `now()`]
+
+  indexes {
+    (farm_id, harvest_id, name) [unique, name: 'uq_crop_farm_harvest_name']
+    harvest_id
+  }
+}
