@@ -7,9 +7,9 @@ BEGIN;
 -- Ordem inversa: crops → farms → producers → harvests
 -- ============================================================
 
-DELETE FROM crops     WHERE id::text LIKE 'd1000000-0000-0000-0000-%';
-DELETE FROM farms     WHERE id::text LIKE 'c1000000-0000-0000-0000-%';
-DELETE FROM producers WHERE id::text LIKE 'b1000000-0000-0000-0000-%';
-DELETE FROM harvests  WHERE id::text LIKE 'a1000000-0000-0000-0000-%';
+truncate table crops cascade;
+truncate table farms cascade;
+truncate table producers cascade;
+truncate table harvests cascade;
 
 COMMIT;
