@@ -1,135 +1,227 @@
-# database
+# Database
 
-Controle de versão do banco de dados com [Sqitch](https://sqitch.org/).
+Controle de versao do banco de dados com [Sqitch](https://sqitch.org/).
+
+Este diretorio contem o plano de mudancas do schema, os scripts SQL de deploy/revert/verify e o script auxiliar usado no desenvolvimento local.
 
 ## Estrutura
 
-```
+```text
 database/
-├── deploy/     # Scripts de aplicação (forward)
-├── revert/     # Scripts de reversão (rollback)
-├── verify/     # Scripts de verificação pós-deploy
-├── sqitch.conf # Configuração do projeto
-└── sqitch.plan # Histórico de changes (não editar manualmente)
+├── deploy/       # Scripts forward
+├── revert/       # Scripts de rollback
+├── verify/       # Scripts de verificacao
+├── migrate.sh    # Script local para criar o banco e executar deploy + verify
+├── sqitch.conf   # Configuracao do projeto Sqitch
+└── sqitch.plan   # Plano de changes
 ```
 
-Cada change tem obrigatoriamente três arquivos correspondentes em `deploy/`, `revert/` e `verify/`.
+Cada change deve possuir arquivos correspondentes em:
 
-## Pré-requisitos
+- `deploy/`
+- `revert/`
+- `verify/`
 
-- Docker + Docker Compose (recomendado)
-- Ou Sqitch instalado localmente
+## Ferramentas usadas
 
-### Instalar Sqitch localmente (opcional)
+- PostgreSQL
+- Sqitch
+- `psql`
+- `createdb`
+
+## Fluxo do Projeto
+
+O projeto nao usa migrations do TypeORM.
+
+Toda evolucao de schema deve ser feita via Sqitch.
+
+Isso vale para:
+
+- criacao de tabelas
+- alteracoes de colunas
+- constraints
+- indices
+- seeds iniciais controladas por SQL
+
+## Uso com Docker Compose
+
+O fluxo principal com Docker esta definido em [docker-compose.yml](/home/mcneillbr/sources/learn/Brain_Agriculture/docker-compose.yml).
+
+Servicos relacionados ao banco:
+
+- `db`: sobe um PostgreSQL 16
+- `migrate`: executa Sqitch, aplica o plano e verifica o schema
+
+### Subir ambiente completo
 
 ```bash
-# macOS
-brew install sqitch --with-postgres-support
-
-# Ubuntu/Debian
-sudo apt-get install sqitch libdbd-pg-perl
-
-# Via cpan
-cpan App::Sqitch DBD::Pg
+cp .env.example .env
+docker compose up --build
 ```
 
-## Uso com Docker (recomendado)
-
-O `docker-compose.yml` na raiz do projeto já sobe o Postgres e aplica as migrations automaticamente via `sqitch deploy`. Para rodar manualmente:
+### Subir somente banco + migracao
 
 ```bash
-# Subir o banco
-docker compose up -d postgres
-
-# Rodar as migrations dentro do container sqitch
-docker compose run --rm sqitch deploy
-
-# Verificar status
-docker compose run --rm sqitch status
-
-# Ver histórico
-docker compose run --rm sqitch log
+docker compose up db migrate
 ```
+
+Observacoes:
+
+- o servico `db` usa `POSTGRES_DB=postgres` como banco administrativo inicial
+- o servico `migrate` cria `DB_NAME` se ele ainda nao existir
+- depois executa `sqitch deploy` e `sqitch verify`
 
 ## Uso local
 
-Configure a variável de ambiente com a connection string:
+Para executar o schema localmente sem Docker, use o script auxiliar:
 
 ```bash
-export SQITCH_TARGET="db:pg://postgres:postgres@localhost:5432/brain_agriculture"
+./database/migrate.sh
 ```
 
+Esse script usa estas variaveis de ambiente:
+
+```env
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=brain_agriculture
+```
+
+Observacoes importantes:
+
+- no `.env` da aplicacao o backend usa `DB_PASS`
+- no `migrate.sh` a variavel lida diretamente e `DB_PASSWORD`
+- no Docker Compose isso ja esta resolvido com o mapeamento `DB_PASSWORD: ${DB_PASS}`
+
+Se quiser rodar localmente com export manual:
+
 ```bash
-# Aplicar todas as changes pendentes
-sqitch deploy
+export DB_USER=postgres
+export DB_PASSWORD=postgres
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_NAME=brain_agriculture
 
-# Aplicar até uma change específica
-sqitch deploy --to 003_create_table_farms
+./database/migrate.sh
+```
 
-# Reverter a última change
-sqitch revert --to @HEAD^
+## Comandos Sqitch uteis
 
-# Reverter tudo
-sqitch revert
+A partir do diretorio `database/`:
 
-# Verificar integridade após deploy
-sqitch verify
+```bash
+cd database
+```
 
-# Ver status atual
-sqitch status
+Exemplos com target explicito:
 
-# Ver log de changes aplicadas
-sqitch log
+```bash
+sqitch deploy -t postgresql://postgres:postgres@localhost:5432/brain_agriculture
+sqitch verify -t postgresql://postgres:postgres@localhost:5432/brain_agriculture
+sqitch status -t postgresql://postgres:postgres@localhost:5432/brain_agriculture
+sqitch log -t postgresql://postgres:postgres@localhost:5432/brain_agriculture
+```
+
+Reverter para um ponto anterior:
+
+```bash
+sqitch revert -t postgresql://postgres:postgres@localhost:5432/brain_agriculture --to @HEAD^
 ```
 
 ## Adicionando uma nova change
 
+Exemplo:
+
 ```bash
-# Cria os três arquivos (deploy, revert, verify) automaticamente
-sqitch add 006_add_column_farms_description \
-  --requires 003_create_table_farms \
-  --note 'Adiciona coluna description em farms'
+cd database
+sqitch add 007_add_index_to_producers_document \
+  --requires 002_create_table_producers \
+  --note 'Adiciona indice para document em producers'
 ```
 
-Isso gera:
-- `deploy/006_add_column_farms_description.sql`
-- `revert/006_add_column_farms_description.sql`
-- `verify/006_add_column_farms_description.sql`
+Isso cria:
 
-E atualiza o `sqitch.plan` automaticamente.
+- `deploy/007_add_index_to_producers_document.sql`
+- `revert/007_add_index_to_producers_document.sql`
+- `verify/007_add_index_to_producers_document.sql`
 
-## Convenções
+E atualiza o `sqitch.plan`.
 
-| Convenção | Exemplo |
-|-----------|---------|
-| Prefixo numérico com 3 dígitos | `006_` |
-| Snake case descritivo | `create_table_producers` |
-| Sempre declarar `requires` | `--requires 002_create_table_producers` |
-| Transações explícitas | `BEGIN; ... COMMIT;` em todo script |
-| `verify` usa `SELECT ... WHERE false` | Valida colunas sem retornar dados |
+## Convencoes
 
-## Changes disponíveis
+- Prefixo numerico com 3 digitos: `007_`
+- Nome descritivo em snake_case
+- Declarar dependencias com `--requires` quando houver relacao entre changes
+- Encapsular scripts com `BEGIN;` e `COMMIT;`
+- Manter `verify/` validando existencia de objetos, colunas e constraints
 
-| # | Change | Descrição |
-|---|--------|-----------|
-| 001 | `create_enum_document_type` | Enum `CPF`/`CNPJ` |
-| 002 | `create_table_producers` | Produtores rurais |
-| 003 | `create_table_farms` | Fazendas com validação de áreas |
-| 004 | `create_table_harvests` | Safras por ano |
-| 005 | `create_table_crops` | Culturas por fazenda e safra |
+## Changes atuais
 
-## Constraints de negócio no banco
+Conforme [sqitch.plan](/home/mcneillbr/sources/learn/Brain_Agriculture/database/sqitch.plan):
 
-As seguintes regras de negócio são reforçadas diretamente no PostgreSQL como segunda linha de defesa (a primeira é a domain layer):
+| Ordem | Change | Objetivo |
+|---|---|---|
+| 000 | `create_extension_on_database` | Cria extensao `uuid-ossp` |
+| 001 | `create_enum_document_type` | Cria enum de documento |
+| 002 | `create_table_producers` | Cria tabela de produtores |
+| 003 | `create_table_farms` | Cria tabela de fazendas |
+| 004 | `create_table_harvests` | Cria tabela de safras |
+| 005 | `create_table_crops` | Cria tabela de culturas |
+| 006 | `insert_initial_data` | Insere dados iniciais |
 
-- `chk_farms_areas_sum` — `arable_area + vegetation_area <= total_area`
-- `chk_farms_state_valid` — apenas siglas de estados brasileiros válidos
-- `chk_producers_document_length` — CPF com 11 dígitos, CNPJ com 14
-- `chk_producers_document_digits` — documento contém apenas dígitos
-- `uq_crop_farm_harvest_name` — mesma cultura não pode ser duplicada na mesma fazenda/safra
-- `chk_crops_name_valid` — apenas culturas permitidas pelo sistema
+## Regras reforcadas no banco
 
+O banco atua como segunda linha de defesa alem das validacoes da domain layer.
 
-# Links
+Exemplos de regras esperadas no schema:
 
-https://sqitch.org/download
+- soma de `arable_area` e `vegetation_area` nao excede `total_area`
+- documento contem apenas digitos e comprimento valido
+- culturas validas seguem a whitelist do sistema
+- combinacao `farm + harvest + crop name` e unica
+
+## Relacao com os testes
+
+Os testes de integracao da camada de infraestrutura usam pg-mem e reproduzem o comportamento esperado do schema e dos repositorios TypeORM.
+
+Arquivos relacionados:
+
+- `tests/infrastructure/database/pg-mem/producer.repository.impl.pgmem.spec.ts`
+- `tests/infrastructure/database/pg-mem/farm.repository.impl.pgmem.spec.ts`
+- `tests/infrastructure/database/pg-mem/harvest.repository.impl.pgmem.spec.ts`
+- `tests/infrastructure/database/support/pg-mem.datasource.ts`
+
+## Troubleshooting
+
+### `sqitch: command not found`
+
+Instale o Sqitch localmente ou use Docker Compose.
+
+### `psql: command not found`
+
+O script `migrate.sh` depende de `psql` e `createdb`.
+
+### Banco nao e criado no ambiente local
+
+Confirme se as variaveis abaixo estao definidas corretamente:
+
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_HOST`
+- `DB_PORT`
+- `DB_NAME`
+
+### Divergencia entre backend e migracao local
+
+Lembre que:
+
+- backend usa `DB_PASS`
+- script local usa `DB_PASSWORD`
+- docker-compose faz a traducao entre elas para o servico `migrate`
+
+## Referencias
+
+- https://sqitch.org/
+- https://sqitch.org/download/
