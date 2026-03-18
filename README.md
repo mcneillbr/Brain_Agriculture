@@ -423,12 +423,4 @@ Este projeto é licenciado sob a **MIT License** — veja o arquivo [LICENSE](./
 
 ---
 
-## 📧 Contato
-
-- **Autor**: [Seu Nome]
-- **Email**: seu-email@example.com
-- **Issues**: [GitHub Issues](https://github.com/seu-usuario/rural-management/issues)
-
----
-
 **Última atualização**: 2024-01-15
