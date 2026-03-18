@@ -1,0 +1,28 @@
+# Build artefacts
+dist/
+coverage/
+
+# Dependencies
+node_modules/
+
+# Frontend build (own Dockerfile handles it)
+frontend/node_modules/
+frontend/.next/
+
+# Test & tooling artefacts
+tests/artillery/report.*
+
+# Source control & IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Docs & markdown
+*.md
+docs/
+
+# Env files (secrets must be injected at runtime)
+.env
+.env.*
+!.env.example
