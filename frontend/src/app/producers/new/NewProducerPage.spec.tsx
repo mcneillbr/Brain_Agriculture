@@ -1,11 +1,17 @@
 import { render, screen } from '@testing-library/react'
 import NewProducerPage from './page'
 
+const mockDispatch = jest.fn()
+
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: jest.fn(),
     back: jest.fn(),
   }),
+}))
+
+jest.mock('@/application/store/hooks', () => ({
+  useAppDispatch: () => mockDispatch,
 }))
 
 jest.mock('@/components/templates/AppLayout/AppLayout', () => ({

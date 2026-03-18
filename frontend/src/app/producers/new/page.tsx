@@ -8,6 +8,8 @@ import AppLayout from '@/components/templates/AppLayout/AppLayout'
 import Button from '@/components/atoms/Button/Button'
 import Input from '@/components/atoms/Input/Input'
 import Spinner from '@/components/atoms/Spinner/Spinner'
+import { useAppDispatch } from '@/application/store/hooks'
+import { refreshDerivedData } from '@/application/store/refreshData'
 import { api } from '@/application/services/api'
 import type {
   CreateProducerDto,
@@ -310,6 +312,7 @@ function formatDocument(value: string): string {
 
 export default function NewProducerPage() {
   const router = useRouter()
+  const dispatch = useAppDispatch()
   const [formState, setFormState] = useState<FormState>({
     producer: { name: '', document: '' },
     farm: {
@@ -427,6 +430,7 @@ export default function NewProducerPage() {
         }
       }
 
+      await dispatch(refreshDerivedData())
       router.push(`/producers`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao cadastrar produtor')

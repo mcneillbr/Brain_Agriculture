@@ -9,6 +9,7 @@ import {
   deleteProducer,
   setSelected,
 } from '../store/slices/producersSlice'
+import { refreshDerivedData } from '../store/refreshData'
 import type { CreateProducerDto, ProducerDto, UpdateProducerDto } from '@/domain/types'
 
 export function useProducers() {
@@ -27,8 +28,20 @@ export function useProducers() {
     loading,
     error,
     select: (producer: ProducerDto | null) => dispatch(setSelected(producer)),
-    create: (dto: CreateProducerDto) => dispatch(createProducer(dto)),
-    update: (id: string, dto: UpdateProducerDto) => dispatch(updateProducer({ id, dto })),
-    remove: (id: string) => dispatch(deleteProducer(id)),
+    create: async (dto: CreateProducerDto) => {
+      const createdProducer = await dispatch(createProducer(dto)).unwrap()
+      await dispatch(refreshDerivedData())
+      return createdProducer
+    },
+    update: async (id: string, dto: UpdateProducerDto) => {
+      const updatedProducer = await dispatch(updateProducer({ id, dto })).unwrap()
+      await dispatch(refreshDerivedData())
+      return updatedProducer
+    },
+    remove: async (id: string) => {
+      const removedProducerId = await dispatch(deleteProducer(id)).unwrap()
+      await dispatch(refreshDerivedData())
+      return removedProducerId
+    },
   }
 }

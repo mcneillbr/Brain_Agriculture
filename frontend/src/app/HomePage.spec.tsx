@@ -1,11 +1,11 @@
 import Home from './page'
 
-const mockRedirect = jest.fn(() => {
+const mockRedirect = jest.fn((path: string) => {
   throw new Error('redirect-called')
 })
 
 jest.mock('next/navigation', () => ({
-  redirect: (path: string) => mockRedirect(),
+  redirect: (path: string) => mockRedirect(path),
 }))
 
 describe('Home page redirect', () => {

@@ -169,25 +169,25 @@ const navItems = [
     isActive: (pathname: string) => pathname === '/dashboard',
   },
   {
-    label: 'Producers',
+    label: 'Produtores',
     icon: Users,
     href: '/producers',
     isActive: (pathname: string) => pathname.startsWith('/producers'),
   },
   {
-    label: 'Farms',
+    label: 'Fazendas',
     icon: Sprout,
     href: '/farms',
     isActive: (pathname: string) => pathname.startsWith('/farms'),
   },
   {
-    label: 'Reports',
+    label: 'Relatórios',
     icon: ChartColumn,
     href: '/reports',
     isActive: (pathname: string) => pathname.startsWith('/reports'),
   },
   {
-    label: 'Settings',
+    label: 'Configurações',
     icon: Settings,
     href: '/settings',
     isActive: (pathname: string) => pathname === '/settings',
@@ -242,7 +242,7 @@ export default function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
 
       <MobileOverlay $open={mobileOpen} onClick={onClose} aria-hidden={!mobileOpen} />
 
-      <MobilePanel $open={mobileOpen} aria-hidden={!mobileOpen} aria-label="Navigation menu">
+      <MobilePanel $open={mobileOpen} aria-hidden={!mobileOpen} aria-label="Menu de navegação">
         <MobileHeader>
           <Logo>
             <LogoCircle>
@@ -250,13 +250,13 @@ export default function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
             </LogoCircle>
             <LogoText>Brain Agriculture</LogoText>
           </Logo>
-          <CloseButton type="button" onClick={onClose} aria-label="Close navigation menu">
+          <CloseButton type="button" onClick={onClose} aria-label="Fechar menu de navegação">
             <X />
           </CloseButton>
         </MobileHeader>
 
         <NavSection>
-          <NavLabel>Main Menu</NavLabel>
+          <NavLabel>Menu Principal</NavLabel>
           {navItems.map((item) => {
             const Icon = item.icon
             return (
@@ -272,7 +272,7 @@ export default function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
         </NavSection>
 
         <Footer>
-          <Quote>&quot;Technology for a sustainable future.&quot;</Quote>
+          <Quote>&quot;Tecnologia para um futuro sustentável.&quot;</Quote>
         </Footer>
       </MobilePanel>
     </>
