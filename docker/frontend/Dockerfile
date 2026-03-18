@@ -12,6 +12,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY frontend/ ./
 
+# Next.js rewrites are resolved during build, so API_URL must exist here.
+ARG API_URL=http://localhost:3000
+ENV API_URL=${API_URL}
+
 # garante que public exista para o COPY final
 RUN mkdir -p /app/public
 RUN npm run build
@@ -22,6 +26,8 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=5000
+ARG API_URL=http://localhost:3000
+ENV API_URL=${API_URL}
 
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static

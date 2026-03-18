@@ -5,7 +5,7 @@ const nextConfig = {
   output: 'standalone',
 
   async rewrites() {
-    // API_URL is injected at container start by docker-compose.
+    // Rewrites are generated at build time, so API_URL must be available during build.
     // Falls back to localhost for local development.
     const apiBase = process.env.API_URL || 'http://localhost:3000'
     return [
