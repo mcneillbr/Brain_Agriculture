@@ -1,0 +1,17 @@
+# Build artefacts
+.next/
+out/
+
+# Dependencies (installed fresh during Docker build)
+node_modules/
+
+# Source control & IDE
+.git/
+.gitignore
+.vscode/
+
+# Docs & env secrets
+*.md
+.env
+.env.*
+!.env.example
