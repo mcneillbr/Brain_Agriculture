@@ -84,6 +84,9 @@ export class FarmResponseDto {
   @ApiProperty()
   producerId!: string
 
+  @ApiPropertyOptional({ example: 'Joao Silva' })
+  producerName?: string
+
   @ApiProperty({ example: 'Fazenda Esperança' })
   name!: string
 

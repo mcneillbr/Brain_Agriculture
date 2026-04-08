@@ -2,8 +2,10 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -17,6 +19,26 @@ import { ParseUuidPipe } from '../pipes/parse-uuid.pipe'
 @Controller('farms')
 export class FarmController {
   constructor(private readonly dispatcher: ApplicationDispatcher) {}
+
+  @Get()
+  @ApiOperation({ summary: 'Listar todas as fazendas' })
+  @ApiResponse({ status: 200, description: 'Lista de fazendas retornada com sucesso' })
+  findAll() {
+    return this.dispatcher.getAllFarms()
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Buscar fazenda por ID' })
+  @ApiParam({ name: 'id', description: 'UUID da fazenda' })
+  @ApiResponse({ status: 200, description: 'Fazenda encontrada' })
+  @ApiResponse({ status: 404, description: 'Fazenda não encontrada' })
+  async findOne(@Param('id', ParseUuidPipe) id: string) {
+    const farm = await this.dispatcher.getFarmById(id)
+    if (!farm) {
+      throw new NotFoundException(`Fazenda com id "${id}" não encontrada`)
+    }
+    return farm
+  }
 
   @Post()
   @ApiOperation({ summary: 'Cadastrar nova fazenda' })

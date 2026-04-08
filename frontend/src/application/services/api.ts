@@ -69,6 +69,12 @@ export const api = {
   },
 
   farms: {
+    getAll: (): Promise<FarmDto[]> =>
+      request<FarmDto[]>(`${BASE}/farms`),
+
+    getById: (id: string): Promise<FarmDto> =>
+      request<FarmDto>(`${BASE}/farms/${id}`),
+
     create: (body: CreateFarmDto): Promise<FarmDto> =>
       request<FarmDto>(`${BASE}/farms`, {
         method: 'POST',

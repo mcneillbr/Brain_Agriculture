@@ -19,6 +19,8 @@ export function makeDispatcherMock(): jest.Mocked<ApplicationDispatcher> {
     deleteProducer: jest.fn(),
 
     // Farms
+    getAllFarms: jest.fn(),
+    getFarmById: jest.fn(),
     createFarm: jest.fn(),
     updateFarm: jest.fn(),
     deleteFarm: jest.fn(),

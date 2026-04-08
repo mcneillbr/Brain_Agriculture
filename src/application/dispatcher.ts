@@ -18,8 +18,10 @@ import { CreateHarvestCollaboration } from './collaborations/create-harvest.coll
 import { Inject } from '@nestjs/common'
 import { IProducerRepository, PRODUCER_REPOSITORY } from '../domain/repositories/producer.repository'
 import { IHarvestRepository, HARVEST_REPOSITORY } from '../domain/repositories/harvest.repository'
+import { IFarmRepository, FARM_REPOSITORY } from '../domain/repositories/farm.repository'
 import { ProducerMapper } from './mappers/producer.mapper'
 import { HarvestMapper } from './mappers/harvest.mapper'
+import { FarmMapper } from './mappers/farm.mapper'
 
 @Injectable()
 export class ApplicationDispatcher {
@@ -36,6 +38,8 @@ export class ApplicationDispatcher {
 
     @Inject(PRODUCER_REPOSITORY)
     private readonly producerRepository: IProducerRepository,
+    @Inject(FARM_REPOSITORY)
+    private readonly farmRepository: IFarmRepository,
     @Inject(HARVEST_REPOSITORY)
     private readonly harvestRepository: IHarvestRepository,
   ) {}
@@ -76,6 +80,24 @@ export class ApplicationDispatcher {
 
   async deleteFarm(id: string): Promise<void> {
     return this.deleteFarmCollaboration.run(id)
+  }
+
+  async getFarmById(id: string): Promise<FarmDto | null> {
+    const farm = await this.farmRepository.findById(id)
+    if (!farm) return null
+
+    const producer = await this.producerRepository.findById(farm.producerId)
+    return FarmMapper.toDto(farm, { producerName: producer?.name })
+  }
+
+  async getAllFarms(): Promise<FarmDto[]> {
+    const [farms, producers] = await Promise.all([
+      this.farmRepository.findAll(),
+      this.producerRepository.findAll(),
+    ])
+
+    const producerNameById = new Map(producers.map((producer) => [producer.id, producer.name]))
+    return FarmMapper.toDtoList(farms, { producerNameById })
   }
 
   // ─── Crops ────────────────────────────────────────────────────────────────

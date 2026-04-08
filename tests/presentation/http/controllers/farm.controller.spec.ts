@@ -1,4 +1,5 @@
 import { FarmController } from '../../../../src/presentation/http/controllers/farm.controller'
+import { NotFoundException } from '@nestjs/common'
 import { makeDispatcherMock } from '../support/dispatcher.mock'
 
 describe('FarmController', () => {
@@ -8,6 +9,32 @@ describe('FarmController', () => {
   beforeEach(() => {
     dispatcher = makeDispatcherMock()
     controller = new FarmController(dispatcher)
+  })
+
+  it('findAll delegates to dispatcher.getAllFarms', async () => {
+    const farms = [{ id: 'farm-1' }, { id: 'farm-2' }]
+    dispatcher.getAllFarms.mockResolvedValue(farms as any)
+
+    await expect(controller.findAll()).resolves.toBe(farms)
+    expect(dispatcher.getAllFarms).toHaveBeenCalledTimes(1)
+  })
+
+  it('findOne delegates to dispatcher.getFarmById', async () => {
+    const id = '550e8400-e29b-41d4-a716-446655440010'
+    const farm = { id, name: 'Fazenda Esperanca' }
+    dispatcher.getFarmById.mockResolvedValue(farm as any)
+
+    await expect(controller.findOne(id)).resolves.toBe(farm)
+    expect(dispatcher.getFarmById).toHaveBeenCalledTimes(1)
+    expect(dispatcher.getFarmById).toHaveBeenCalledWith(id)
+  })
+
+  it('findOne throws NotFoundException when farm does not exist', async () => {
+    const id = '550e8400-e29b-41d4-a716-446655440099'
+    dispatcher.getFarmById.mockResolvedValue(null)
+
+    await expect(controller.findOne(id)).rejects.toBeInstanceOf(NotFoundException)
+    expect(dispatcher.getFarmById).toHaveBeenCalledWith(id)
   })
 
   it('create delegates to dispatcher.createFarm', async () => {

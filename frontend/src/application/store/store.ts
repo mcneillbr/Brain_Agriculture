@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit'
 import dashboardReducer from './slices/dashboardSlice'
+import farmsReducer from './slices/farmsSlice'
 import producersReducer from './slices/producersSlice'
 import reportsReducer from './slices/reportsSlice'
 
 export const store = configureStore({
   reducer: {
     dashboard: dashboardReducer,
+    farms: farmsReducer,
     producers: producersReducer,
     reports: reportsReducer,
   },

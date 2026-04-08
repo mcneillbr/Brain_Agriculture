@@ -22,6 +22,7 @@ export interface UpdateFarmDto {
 export interface FarmDto {
   id: string
   producerId: string
+  producerName?: string
   name: string
   city: string
   state: string
